@@ -1,0 +1,36 @@
+# Habilitar mod_rewrite
+RewriteEngine On
+
+# Passar headers Authorization para PHP (múltiplas tentativas)
+RewriteCond %{HTTP:Authorization} ^(.*)
+RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
+
+# Headers adicionais para hospedagens compartilhadas
+SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+
+# Para VPS com proxy reverso
+RewriteCond %{HTTP:X-Forwarded-Authorization} ^(.*)
+RewriteRule .* - [e=HTTP_X_FORWARDED_AUTHORIZATION:%1]
+
+# Para VPS que não passam headers corretamente
+RewriteCond %{HTTP:Auth-Token} ^(.*)
+RewriteRule .* - [e=HTTP_X_AUTH_TOKEN:%1]
+
+# Headers customizados para VPS
+SetEnvIf X-Forwarded-Authorization "(.*)" HTTP_X_FORWARDED_AUTHORIZATION=$1
+SetEnvIf Auth-Token "(.*)" HTTP_X_AUTH_TOKEN=$1
+
+# Permitir headers CORS
+Header always set Access-Control-Allow-Origin "*"
+Header always set Access-Control-Allow-Methods "GET, POST, PATCH, DELETE, OPTIONS"
+Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-CSRF-Token, X-Forwarded-Authorization, Auth-Token"
+Header always set Access-Control-Max-Age "86400"
+
+# Headers de segurança
+Header always set X-Content-Type-Options "nosniff"
+Header always set X-Frame-Options "DENY"
+Header always set X-XSS-Protection "1; mode=block"
+
+# Para requisições OPTIONS (preflight)
+RewriteCond %{REQUEST_METHOD} OPTIONS
+RewriteRule ^(.*)$ $1 [R=200,L]

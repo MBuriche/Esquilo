@@ -1,0 +1,34 @@
+[2024-11-16 19:06:35] Dados JSON enviados: {"method":"user_deposit","agent_code":"seu_agent_code","agent_token":"seu_agent_token","user_code":"06664868598","amount":1}
+[2024-11-16 19:06:35] Resposta da API: {"status":0,"msg":"O Agente é inválido"}
+[2024-11-20 10:55:50] Dados JSON enviados: {"method":"user_deposit","agent_code":"seu_agent_code","agent_token":"seu_agent_token","user_code":"06664868598","amount":1}
+[2024-11-20 10:55:50] Resposta da API: {"status":0,"msg":"O Agente é inválido"}
+[2024-11-23 10:43:55] Dados JSON enviados: {"method":"user_deposit","agent_code":"170c4ac4-246d-46e0-b03c-a0c4d5cacad6","agent_token":"2b91039a-3d0a-4495-8fc5-fa707ccfa369","user_code":"06664868598","amount":5}
+[2024-11-23 10:43:55] Resposta da API: {"status":0,"msg":"O Agente é inválido"}
+[2024-11-23 10:44:19] Dados JSON enviados: {"method":"user_deposit","agent_code":"170c4ac4-246d-46e0-b03c-a0c4d5cacad6","agent_token":"2b91039a-3d0a-4495-8fc5-fa707ccfa369","user_code":"06664868598","amount":5}
+[2024-11-23 10:44:20] Resposta da API: {"status":0,"msg":"O Agente é inválido"}
+[2024-11-23 10:44:34] Dados JSON enviados: {"method":"user_deposit","agent_code":"170c4ac4-246d-46e0-b03c-a0c4d5cacad6","agent_token":"2b91039a-3d0a-4495-8fc5-fa707ccfa369","user_code":"06664868598","amount":10}
+[2024-11-23 10:44:34] Resposta da API: {"status":0,"msg":"O Agente é inválido"}
+[2024-11-23 12:16:06] Dados JSON enviados: {"method":"user_deposit","agent_code":"170c4ac4-246d-46e0-b03c-a0c4d5cacad6","agent_token":"2b91039a-3d0a-4495-8fc5-fa707ccfa369","user_code":"06664868598","amount":807}
+[2024-11-23 12:16:06] Resposta da API: {"status":0,"msg":"O Agente é inválido"}
+[2024-11-23 12:17:21] Dados JSON enviados: {"method":"user_deposit","agent_code":"170c4ac4-246d-46e0-b03c-a0c4d5cacad6","agent_token":"2b91039a-3d0a-4495-8fc5-fa707ccfa369","user_code":"06664868598","amount":803}
+[2024-11-23 12:17:21] Resposta da API: {"status":0,"msg":"O Agente é inválido"}
+[2024-11-30 23:16:30] Dados JSON enviados: {"method":"user_deposit","agent_code":"170c4ac4-246d-46e0-b03c-a0c4d5cacad6","agent_token":"2b91039a-3d0a-4495-8fc5-fa707ccfa369","user_code":"06664868598","amount":226}
+[2024-11-30 23:16:31] Resposta da API: {"status":0,"msg":"O Agente é inválido"}
+[2024-12-04 11:58:40] Dados JSON enviados: {"method":"user_deposit","agent_code":"170c4ac4-246d-46e0-b03c-a0c4d5cacad6","agent_token":"2b91039a-3d0a-4495-8fc5-fa707ccfa369","user_code":"06664868598","amount":5}
+[2024-12-04 11:58:41] Resposta da API: {"status":0,"msg":"O Agente é inválido"}
+[2024-12-06 18:12:37] Dados JSON enviados: {"method":"user_deposit","agent_code":"170c4ac4-246d-46e0-b03c-a0c4d5cacad6","agent_token":"2b91039a-3d0a-4495-8fc5-fa707ccfa369","user_code":"06664868598","amount":259}
+[2024-12-06 18:12:37] Resposta da API: {"status":0,"msg":"O Agente é inválido"}
+[2024-12-18 08:52:20] Dados JSON enviados: {"method":"user_deposit","agent_code":"8ff848de-8d67-4030-bf59-f31f7b1f8315","agent_token":"86c529f5-8c36-4dbc-a07c-b637f57cfed9","user_code":"06899882302","amount":10}
+[2024-12-18 08:52:21] Resposta da API: {"status":0,"msg":"O Agente é inválido"}
+[2025-01-07 21:30:04] Dados JSON enviados: {"method":"user_deposit","agent_code":"eb907b4c-2ec1-48f5-949a-6fe90a2ae94e","agent_token":"b2d0604a-e33e-4c7a-bd68-f2f724fd4208","user_code":"60366650327","amount":10}
+[2025-01-07 21:30:05] Resposta da API: {"status":0,"msg":"O Agente é inválido"}
+[2025-01-25 19:40:12] Dados JSON enviados: {"method":"user_deposit","agent_code":"dcd038b6-0bb7-40ef-8662-8977d738e89e","agent_token":"418624ba-0854-4e5f-b6f2-17e1d3bf02ea","user_code":"62586671392","amount":50}
+[2025-01-25 19:40:13] Resposta da API: {"status":0,"msg":"O Agente é inválido"}
+[2025-01-25 19:40:23] Dados JSON enviados: {"method":"user_deposit","agent_code":"dcd038b6-0bb7-40ef-8662-8977d738e89e","agent_token":"418624ba-0854-4e5f-b6f2-17e1d3bf02ea","user_code":"07055255384","amount":70}
+[2025-01-25 19:40:24] Resposta da API: {"status":0,"msg":"O Agente é inválido"}
+[2025-01-26 16:44:57] Dados JSON enviados: {"method":"user_deposit","agent_code":"dcd038b6-0bb7-40ef-8662-8977d738e89e","agent_token":"418624ba-0854-4e5f-b6f2-17e1d3bf02ea","user_code":"61620691337","amount":5}
+[2025-01-26 16:44:57] Resposta da API: {"status":0,"msg":"O Agente é inválido"}
+[2025-01-26 16:45:02] Dados JSON enviados: {"method":"user_deposit","agent_code":"dcd038b6-0bb7-40ef-8662-8977d738e89e","agent_token":"418624ba-0854-4e5f-b6f2-17e1d3bf02ea","user_code":"62929285354","amount":22}
+[2025-01-26 16:45:02] Resposta da API: {"status":0,"msg":"O Agente é inválido"}
+[2025-01-26 16:45:07] Dados JSON enviados: {"method":"user_deposit","agent_code":"dcd038b6-0bb7-40ef-8662-8977d738e89e","agent_token":"418624ba-0854-4e5f-b6f2-17e1d3bf02ea","user_code":"07055255384","amount":70}
+[2025-01-26 16:45:07] Resposta da API: {"status":0,"msg":"O Agente é inválido"}

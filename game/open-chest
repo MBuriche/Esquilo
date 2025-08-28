@@ -1,0 +1,29 @@
+{
+    "success": true,
+    "chest_content": {
+        "type": "prize",
+        "multiplier": 0.5,
+        "prize_value": 0.25
+    },
+    "is_fox": false,
+    "multiplier": 0.5,
+    "bonus_multiplier": 1,
+    "total_winnings": 0.25,
+    "game_over": false,
+    "all_results": null,
+    "user_balance": "19.00",
+    "player_score": 0,
+    "rtp_info": {
+        "max_payout": 0,
+        "current_payout": 0.25,
+        "bonus_chance": 19
+    },
+    "debug": {
+        "chest_type": "prize",
+        "fox_positions": [
+            2,
+            6
+        ],
+        "total_foxes": 2
+    }
+}

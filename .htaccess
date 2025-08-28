@@ -1,0 +1,283 @@
+RewriteEngine On
+
+# Tratar requisições OPTIONS (CORS preflight) - REMOVIDO PARA EVITAR CONFLITO
+# RewriteCond %{REQUEST_METHOD} OPTIONS
+# RewriteRule ^(.*)$ $1 [R=200,L]
+
+# Redirecionar para HTTPS (descomente se necessário)
+#RewriteCond %{HTTPS} off
+#RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+RewriteBase /
+
+# =====================================================
+# ROTAS DA API - MÁXIMA PRIORIDADE
+# =====================================================
+# Todas as rotas que começam com /api/ devem ir para a API
+RewriteRule ^api/(.*)$ api/v1/api.php [QSA,L]
+RewriteRule ^gold_api(.*)$ callback/game_callback [QSA,L]
+
+# =====================================================
+# ROTAS DO ZIGGY - REDIRECIONAMENTO PARA API
+# =====================================================
+# Rotas de autenticação e usuário
+RewriteRule ^login$ api/v1/api.php [QSA,L]
+RewriteRule ^register$ api/v1/api.php [QSA,L]
+RewriteRule ^logout$ api/v1/api.php [QSA,L]
+RewriteRule ^forgot-password$ api/v1/api.php [QSA,L]
+RewriteRule ^reset-password/(.*)$ api/v1/api.php [QSA,L]
+RewriteRule ^verify-email$ api/v1/api.php [QSA,L]
+RewriteRule ^verify-email/(.*)/(.*)$ api/v1/api.php [QSA,L]
+RewriteRule ^email/verification-notification$ api/v1/api.php [QSA,L]
+RewriteRule ^confirm-password$ api/v1/api.php [QSA,L]
+RewriteRule ^password$ api/v1/api.php [QSA,L]
+
+# Rotas de perfil e usuário
+RewriteRule ^profile$ api/v1/api.php [QSA,L]
+RewriteRule ^user-data$ api/v1/api.php [QSA,L]
+RewriteRule ^change-password$ api/v1/api.php [QSA,L]
+RewriteRule ^user/refresh$ api/v1/api.php [QSA,L]
+RewriteRule ^user/heartbeat$ api/v1/api.php [QSA,L]
+
+# Rotas de depósito e saque
+RewriteRule ^deposit-data$ api/v1/api.php [QSA,L]
+RewriteRule ^deposit$ api/v1/api.php [QSA,L]
+RewriteRule ^check-payment-status$ api/v1/api.php [QSA,L]
+RewriteRule ^withdrawal-data$ api/v1/api.php [QSA,L]
+RewriteRule ^withdrawal-history$ api/v1/api.php [QSA,L]
+RewriteRule ^withdrawal$ api/v1/api.php [QSA,L]
+RewriteRule ^update-pix-document$ api/v1/api.php [QSA,L]
+
+# Rotas de jogo
+RewriteRule ^game/start$ api/v1/api.php [QSA,L]
+RewriteRule ^game/open-chest$ api/v1/api.php [QSA,L]
+RewriteRule ^game/cash-out$ api/v1/api.php [QSA,L]
+RewriteRule ^game/cash-out$ api/v1/api.php [QSA,L]
+RewriteRule ^game-history$ api/v1/api.php [QSA,L]
+
+# Rotas de afiliado e agente
+RewriteRule ^agent-panel-data$ api/v1/api.php [QSA,L]
+RewriteRule ^agent-collect-commission$ api/v1/api.php [QSA,L]
+RewriteRule ^referral-link$ api/v1/api.php [QSA,L]
+
+# Rotas de pagamento
+RewriteRule ^payment/callback/horsepay$ api/v1/api.php [QSA,L]
+
+# Rotas de administração
+#RewriteRule ^admin/(.*)$ api/v1/api.php [QSA,L]
+RewriteRule ^weizhen-manager$ weizhen-manager.php [QSA,L]
+RewriteRule ^admin/live-games$ api/v1/api.php [QSA,L]
+RewriteRule ^login-to-manager$ api/v1/api.php [QSA,L]
+RewriteRule ^login-to-game$ api/v1/api.php [QSA,L]
+
+# Rotas de tenants
+RewriteRule ^tenants$ api/v1/api.php [QSA,L]
+RewriteRule ^tenants/create$ api/v1/api.php [QSA,L]
+RewriteRule ^tenants/migrate-all$ api/v1/api.php [QSA,L]
+RewriteRule ^tenants/(.*)$ api/v1/api.php [QSA,L]
+
+# Rotas de storage e assets
+#RewriteRule ^storage/(.*)$ api/v1/api.php [QSA,L]
+RewriteRule ^tenancy/assets/(.*)$ api/v1/api.php [QSA,L]
+
+# Rotas de debugbar (desenvolvimento)
+RewriteRule ^_debugbar/(.*)$ api/v1/api.php [QSA,L]
+
+# Rotas de horizon (filas)
+RewriteRule ^horizon/(.*)$ api/v1/api.php [QSA,L]
+
+# Rotas de sanctum (autenticação)
+RewriteRule ^sanctum/csrf-cookie$ api/v1/api.php [QSA,L]
+
+# Rotas de dashboard
+RewriteRule ^dashboard$ api/v1/api.php [QSA,L]
+
+# =====================================================
+# ARQUIVOS ESTÁTICOS - PERMITIR ACESSO DIRETO
+# =====================================================
+# Se o arquivo existe (CSS, JS, imagens, favicon, etc.), servir diretamente
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^ - [L]
+
+# Se o diretório existe, servir diretamente
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# =====================================================
+# PROTEÇÃO DE PASTAS SENSÍVEIS
+# =====================================================
+# Bloquear acesso direto a pastas do sistema
+RewriteRule ^(api|config|core|controllers|examples)/.*$ - [F,L]
+
+# =====================================================
+# SPA FALLBACK - APENAS PARA ROTAS NÃO-API
+# =====================================================
+# Para QUALQUER outra coisa que não seja API e não seja arquivo físico,
+# redirecionar para o index.php (SPA)
+RewriteCond %{REQUEST_URI} !^/api/
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.php [L]
+
+# Regras adicionais para segurança e configuração
+<IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews
+    </IfModule>
+</IfModule>
+
+# ----------------------------------------------------------------------
+# | Anti- Clickjacking                                                  |
+# ----------------------------------------------------------------------
+<IfModule mod_headers.c>
+    <FilesMatch "\.(html|htm)$">
+        Header set X-Frame-Options "ALLOW"
+    </FilesMatch>
+</IfModule>
+
+# ----------------------------------------------------------------------
+# | Negando acesso aos diretórios                                       |
+# ----------------------------------------------------------------------
+<IfModule mod_autoindex.c>
+    Options -Indexes
+</IfModule>
+
+# ----------------------------------------------------------------------
+# | Bloqueando arquivos sensíveis                                       |
+# ----------------------------------------------------------------------
+<FilesMatch "(^#.*#|\.(bak|conf|dist|fla|in[ci]|log|psd|sh|sql|sw[op])|~)$">
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+        Satisfy All
+    </IfModule>
+</FilesMatch>
+
+# ----------------------------------------------------------------------
+# | Bloqueando arquivos zip/rar e outros                               |
+# ----------------------------------------------------------------------
+<FilesMatch "\.(zip|rar|7z|tar|gz|tar\.gz|tar\.bz2|tar\.xz|cab|iso|dmg|exe|msi)$">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
+
+# ----------------------------------------------------------------------
+# | Proteção contra execução de scripts em diretórios não permitidos   |
+# ----------------------------------------------------------------------
+#<Directory "/uploads/">
+#    # Bloquear execução de scripts PHP
+#    php_flag engine off
+#    <FilesMatch "\.php$">
+#        Order Deny,Allow
+#        Deny from all
+#    </FilesMatch>
+#</Directory>
+
+# ----------------------------------------------------------------------
+# | Proteção contra SQL Injection e XSS                                |
+# ----------------------------------------------------------------------
+RewriteCond %{QUERY_STRING} (\|%3B|\%3B|%3C|%3E|%22|%27|%00|\-\-|\%2F) [NC]
+RewriteRule .* - [F,L]
+
+# ----------------------------------------------------------------------
+# | Headers CORS para compatibilidade com Inertia.js                   |
+# ----------------------------------------------------------------------
+<IfModule mod_headers.c>
+    # Headers CORS dinâmicos baseados na origem
+    SetEnvIf Origin "^https://localhost(:[0-9]+)?$" CORS_ALLOW_ORIGIN=$0
+    SetEnvIf Origin "^http://localhost(:[0-9]+)?$" CORS_ALLOW_ORIGIN=$0
+    SetEnvIf Origin "^https://weizhen\.games$" CORS_ALLOW_ORIGIN=$0
+    SetEnvIf Origin "^http://weizhen\.games$" CORS_ALLOW_ORIGIN=$0
+    
+    Header always set Access-Control-Allow-Origin "%{CORS_ALLOW_ORIGIN}e" env=CORS_ALLOW_ORIGIN
+    Header always set Access-Control-Allow-Origin "*" env=!CORS_ALLOW_ORIGIN
+    
+    Header always set Access-Control-Allow-Methods "GET, POST, PATCH, PUT, DELETE, OPTIONS"
+    Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-CSRF-Token, X-Requested-With, X-Inertia, X-inertia-location, Accept, Accept-Language, Content-Language, X-Forwarded-For, X-Forwarded-Host, X-Forwarded-Proto, Origin, Referer, User-Agent"
+    Header always set Access-Control-Max-Age "86400"
+    Header always set Access-Control-Allow-Credentials "true"
+    Header always set Access-Control-Expose-Headers "X-Inertia, X-inertia-location"
+    
+    # Para requisições OPTIONS (preflight) - REMOVIDO PARA EVITAR CONFLITO
+    # RewriteCond %{REQUEST_METHOD} OPTIONS
+    # RewriteRule ^(.*)$ $1 [R=200,L]
+</IfModule>
+
+# ----------------------------------------------------------------------
+# | Melhorias de segurança adicionais                                  |
+# ----------------------------------------------------------------------
+<IfModule mod_headers.c>
+    # Proteção contra ataques XSS
+    Header set X-XSS-Protection "1; mode=block"
+    # Proteção contra ataques de clickjacking
+    Header set X-Content-Type-Options "nosniff"
+    # Proteção contra MIME-sniffing
+    Header set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    # Ajuste da política de segurança para permitir scripts inline
+    # Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'nonce-<?= $nonce ?>' https://accounts.google.com https://connect.facebook.net; object-src 'none'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;"
+
+</IfModule>
+
+
+# ----------------------------------------------------------------------
+# | Bloqueando acesso ao arquivo .htaccess                             |
+# ----------------------------------------------------------------------
+<Files .htaccess>
+    Order Allow,Deny
+    Deny from all
+</Files>
+
+# ----------------------------------------------------------------------
+# | Ativar Compressão Gzip (reduzir o tamanho dos arquivos transferidos)|
+# ----------------------------------------------------------------------
+<IfModule mod_deflate.c>
+    # Compressão de arquivos CSS, JavaScript, HTML, XML e outros
+    AddOutputFilterByType DEFLATE text/plain text/html text/xml text/css application/javascript application/x-javascript application/xml application/json
+</IfModule>
+
+# ----------------------------------------------------------------------
+# | Configuração de Cache de Navegador para Arquivos Estáticos          |
+# ----------------------------------------------------------------------
+<IfModule mod_expires.c>
+    # Definir cabeçalhos de expiração para recursos estáticos
+    ExpiresActive On
+
+    # Imagens: cache por 1 ano
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+
+    # Arquivos CSS: cache por 1 mês
+    ExpiresByType text/css "access plus 1 month"
+
+    # Arquivos JavaScript: cache por 1 mês
+    ExpiresByType application/javascript "access plus 1 month"
+
+    # Fontes: cache por 1 ano
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType font/woff "access plus 1 year"
+    ExpiresByType font/ttf "access plus 1 year"
+    ExpiresByType font/otf "access plus 1 year"
+    ExpiresByType application/font-woff2 "access plus 1 year"
+
+    # Arquivos PDF: cache por 1 mês
+    ExpiresByType application/pdf "access plus 1 month"
+</IfModule>
+
+# ----------------------------------------------------------------------
+# | Cache para outros tipos de arquivos (imagens, fontes, etc.)        |
+# ----------------------------------------------------------------------
+<IfModule mod_headers.c>
+    # Definir cabeçalhos para evitar cache em conteúdo dinâmico
+    <FilesMatch "\.(php|html|htm|xml)$">
+        Header set Cache-Control "no-store, no-cache, must-revalidate, post-check=0, pre-check=0"
+        Header set Pragma "no-cache"
+    </FilesMatch>
+    
+    # Para arquivos estáticos (como imagens e fontes), podemos permitir cache mais longo
+    <FilesMatch "\.(jpg|jpeg|png|gif|webp|svg|css|js|woff|woff2|ttf|otf|eot|pdf)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+</IfModule>
