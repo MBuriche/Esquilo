@@ -1,0 +1,17 @@
+node_modules/
+vendor/
+tmp/
+storage/*
+!storage/.gitkeep
+
+.DS_Store
+Thumbs.db
+.vscode/
+
+.env
+.env.*
+*.sql
+*.zip
+*.rar
+*.tar
+*.gz
