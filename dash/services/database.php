@@ -1,29 +1,17 @@
 <?php
-//  -- Setar o timezone padrão do sistema  --------------------------------------------------------//
-date_default_timezone_set("America/Sao_Paulo");
-define('SITE_URL', 'http://' . $_SERVER['HTTP_HOST']);
-define('PRODUCAO', true);
-if (PRODUCAO) {
-    $bd = array(
-        'local' => 'localhost', // local/ip
-        'usuario' => 'u538002852_aula222222', // user bd
-        'senha' => '2pN/&?Sc!a/|', // senha bd
-        'banco' => 'u538002852_aula222222' // nome bd
-    );
-} else {
-    $bd = array(
-        'local' => 'localhost', // local/ip
-        'usuario' => 'u538002852_aula222222', // user bd
-        'senha' => '2pN/&?Sc!a/|', // senha bd
-        'banco' => 'u538002852_aula222222' // nome bd
-    );
-}
-#----------------------------------------------------------------------------------------------------------#
-//-- conexao procedural --------------------------------------------------------------------------//
-$mysqli = new mysqli($bd['local'], $bd['usuario'], $bd['senha'], $bd['banco']);
+// carrega credenciais centralizadas
+require_once __DIR__ . '/../../config.php';
 
-if ($mysqli->connect_errno) {
-    echo "Erro ao Conectar o BD: (" . $mysqli->connect_errno . ") " . $mysqli->connect_error;
-    exit;
+// conexão mysqli
+$mysqli = @new mysqli(DB_HOST, DB_USERNAME, DB_PASSWORD, DB_NAME);
+
+if ($mysqli->connect_error) {
+    error_log('DB connect error (' . $mysqli->connect_errno . '): ' . $mysqli->connect_error);
+    http_response_code(500);
+    exit('Erro ao conectar no banco de dados.');
 }
-$mysqli->set_charset("utf8mb4");
+
+$mysqli->set_charset('utf8mb4');
+
+// compat: se o restante do código usa $conn
+$conn = $mysqli;
