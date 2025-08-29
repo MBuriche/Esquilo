@@ -21,3 +21,4 @@ Thumbs.db
 /deposit-data/
 /withdrawal-data/
 *.sql.bak.*
+config.php
