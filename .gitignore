@@ -16,3 +16,9 @@ Thumbs.db
 *.tar
 *.gz
 *.sql
+/api/v1/logs/
+/uploads/
+/deposit-data/
+/withdrawal-data/
+*.sql.bak.*
+config.php
