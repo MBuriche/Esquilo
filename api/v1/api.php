@@ -16,8 +16,13 @@ Rest Api, Ryan phillyps. TG: @phillyps / WPP: +5543999203901
 /* Main Settings REST API PHILLYPS V3 */
 
 // Configurações de segurança
-ini_set('display_errors', 0); // Desabilitar exibição de erros em produção
-error_reporting(E_ALL);
+if (getenv('APP_ENV') !== 'production') {
+    ini_set('display_errors', 1);
+    error_reporting(E_ALL);
+} else {
+    ini_set('display_errors', 0); // Desabilitar exibição de erros em produção
+    error_reporting(0);
+}
 ini_set('log_errors', 1);
 ini_set('error_log', __DIR__ . '/error.log');
 

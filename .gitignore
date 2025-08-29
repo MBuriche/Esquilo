@@ -1,19 +1,23 @@
-node_modules/
-vendor/
++1
+-0
+
+módulos_de_nó/
+vendedor/
 tmp/
-storage/*
-!storage/.gitkeep
+armazenar/*
+!armazenamento/.gitkeep
 
 .DS_Store
-Thumbs.db
+Polegares.db
 .vscode/
 
 .env
 .env.*
+!.env.exemplo
 *.sql
 *.zip
 *.rar
-*.tar
+*.alcatrão
 *.gz
 *.sql
 config.php

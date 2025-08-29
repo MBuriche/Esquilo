@@ -1,4 +1,5 @@
-// ⚠️ ATENÇÃO:Precisamos validar isso aqui ⚠️
+// Olhar depois
+
 <?php
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_gateway_config'])) {
     header('Content-Type: application/json');
@@ -57,13 +58,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_gateway_config']
             'success' => false,
             'message' => 'Erro ao salvar configurações: ' . $e->getMessage()
         ]);
-        exit;
+            exit;
+        }
     }
-            <div x-cloak class="fixed inset-0 bg-[black]/60 z-50 2xl:hidden" :class="{'hidden' : !$store.app.rightsidebar}"
-        @click="$store.app.rightSidebar()"></div>
-    <-- End Right Sidebar Olverlay -->
-     <!-- Start Main Content -->
-    <div class="main-container navbar-sticky flex" :class="[$store.app.navbar]">
+    ?>
+        <div x-cloak class="fixed inset-0 bg-[black]/60 z-50 2xl:hidden" :class="{'hidden' : !$store.app.rightsidebar}"
+            @click="$store.app.rightSidebar()"></div>
+        <!-- End Right Sidebar Overlay -->
+         <!-- Start Main Content -->
+        <div class="main-container navbar-sticky flex" :class="[$store.app.navbar]">
     <!-- Start Sidebar -->
         <nav
             class="sidebar fixed top-0 bottom-0 z-40 flex-none w-[212px] border-r border-black/10 dark:border-white/10 transition-all duration-300">
@@ -136,7 +139,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_gateway_config']
                                     <input class="form-input w-full border border-black/10 dark:border-white/10 bg-transparent px-3 py-2.5 rounded-lg text-xs" type="text" value="<?php echo htmlspecialchars($configs[$gw]['atualizado']); ?>" readonly />
                                 </div>
                             </div>
-                        <?php endforeach;
+                        <?php endforeach; ?>
                         </div>
                         <div class="flex justify-center mt-8">
                             <button type="submit"
@@ -194,8 +197,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_gateway_config']
                     showToast(data.message, data.success ? 'success' : 'error');
                 });
         });
-        
+
         // Lógica para garantir que apenas um gateway esteja ativo por vez
+
         const gatewayChecks = document.querySelectorAll('input[type=checkbox][name$="_ativo"]');
         gatewayChecks.forEach(cb => {
             cb.addEventListener('change', function() {

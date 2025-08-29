@@ -1,5 +1,6 @@
 // ⚠️ ATENÇÃO:Precisamos validar isso aqui ⚠️
 <?php
+require_once __DIR__ . '/cache_config.php';
 /**
  * Security Configuration for REST API
  * Proteções contra SQL Injection, XSS, CSRF e outros ataques
@@ -196,7 +197,7 @@ class SecurityValidator {
  * Rate Limiting
  */
 class RateLimiter {
-    private static $cache = [];
+    private static $redis = null;
 
     /**
      * Verificar rate limit por IP
@@ -207,40 +208,52 @@ class RateLimiter {
         $window = $window ?: $config['rate_limit_window'];
 
         $key = "rate_limit_{$ip}";
-        $now = time();
+        $count = self::increment($key, $window);
 
-        if (!isset(self::$cache[$key])) {
-            self::$cache[$key] = [];
-        }
-
-        // Remover registros antigos
-        self::$cache[$key] = array_filter(self::$cache[$key], function($timestamp) use ($now, $window) {
-            return ($now - $timestamp) < $window;
-        });
-
-        // Verificar se excedeu o limite
-        if (count(self::$cache[$key]) >= $limit) {
-            return false;
-        }
-
-        // Adicionar novo registro
-        self::$cache[$key][] = $now;
-
-        return true;
+        return $count <= $limit;
     }
-
     /**
      * Limpar cache antigo
      */
     public static function cleanup() {
-        $now    = time();
-        $config = SECURITY_CONFIG;
-
-        foreach (self::$cache as $key => $timestamps) {
-            self::$cache[$key] = array_filter($timestamps, function($timestamp) use ($now, $config) {
-                return ($now - $timestamp) < $config['rate_limit_window'];
-            });
+        $redis = self::getBackend();
+        $it = null;
+        while (($keys = $redis->scan($it, 'rate_limit_*')) !== false) {
+            foreach ($keys as $key) {
+                if ($redis->ttl($key) < 0) {
+                    $redis->del($key);
+                }
+            }
+            if ($it === 0) {
+                break;
+            }
         }
+    }
+
+    private static function getBackend() {
+        if (self::$redis === null) {
+            $config = CACHE_CONFIG;
+            $url = $config['redis_url'];
+            $parts = parse_url($url);
+            $host = $parts['host'] ?? '127.0.0.1';
+            $port = $parts['port'] ?? 6379;
+            $redis = new Redis();
+            $redis->connect($host, $port);
+            if (isset($parts['pass'])) {
+                $redis->auth($parts['pass']);
+            }
+            self::$redis = $redis;
+        }
+        return self::$redis;
+    }
+
+    public static function increment($key, $ttl) {
+        $redis = self::getBackend();
+        $count = $redis->incr($key);
+        if ($count === 1) {
+            $redis->expire($key, $ttl);
+        }
+        return $count;
     }
 }
 
@@ -249,9 +262,37 @@ class RateLimiter {
  */
 class SecurityProtection {
 
-    /**
-     * Verificar se a requisição é segura
-     */
+    // Redis backend instance
+    private static $redis = null;
+
+    // Removido método duplicado validateRequest
+
+    private static function getBackend() {
+        if (self::$redis === null) {
+            $config = CACHE_CONFIG;
+            $url = $config['redis_url'];
+            $parts = parse_url($url);
+            $host = $parts['host'] ?? '127.0.0.1';
+            $port = $parts['port'] ?? 6379;
+            $redis = new Redis();
+            $redis->connect($host, $port);
+            if (isset($parts['pass'])) {
+                $redis->auth($parts['pass']);
+            }
+            self::$redis = $redis;
+        }
+        return self::$redis;
+    }
+
+    public static function increment($key, $ttl) {
+        $redis = self::getBackend();
+        $count = $redis->incr($key);
+        if ($count === 1) {
+            $redis->expire($key, $ttl);
+        }
+        return $count;
+    }
+
     public static function validateRequest() {
         // Verificar método HTTP
         $method = $_SERVER['REQUEST_METHOD'] ?? '';
@@ -367,6 +408,12 @@ class SecurityProtection {
  */
 class SecurityHeaders {
 
+ /**
+     * Nonces used for inline scripts and styles
+     */
+    private static $scriptNonce;
+    private static $styleNonce;
+
     /**
      * Aplicar headers de segurança
      */
@@ -385,14 +432,33 @@ class SecurityHeaders {
 
         // Content Security Policy
         $csp = "default-src 'self'; " .
-               "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " .
-               "style-src 'self' 'unsafe-inline'; " .
+                "script-src 'self' 'nonce-" . self::getScriptNonce() . "'; " .
+               "style-src 'self' 'nonce-" . self::getStyleNonce() . "'; " .
                "img-src 'self' data: https:; " .
                "font-src 'self' data:; " .
                "connect-src 'self'; " .
                "frame-ancestors 'none';";
 
         header("Content-Security-Policy: {$csp}");
+    }
+/**
+     * Return nonce for inline scripts
+     */
+    public static function getScriptNonce() {
+        if (!self::$scriptNonce) {
+            self::$scriptNonce = base64_encode(random_bytes(16));
+        }
+        return self::$scriptNonce;
+    }
+
+    /**
+     * Return nonce for inline styles
+     */
+    public static function getStyleNonce() {
+        if (!self::$styleNonce) {
+            self::$styleNonce = base64_encode(random_bytes(16));
+        }
+        return self::$styleNonce;
     }
 
     /**
@@ -448,8 +514,6 @@ function initializeSecurity() {
         exit;
     }
 
-    // Limpar cache antigo periodicamente
-    if (rand(1, 100) === 1) {
-        RateLimiter::cleanup();
-    }
+   // Limpeza das chaves expiradas
+    RateLimiter::cleanup();
 }
