@@ -1,5 +1,7 @@
+// ⚠️ ATENÇÃO:Precisamos validar isso aqui ⚠️
 <?php
 include_once "services/database.php";
+include_once "services/funcao.php";
 
 // Função para buscar todos os banners
 function getBanners($mysqli) {
@@ -21,23 +23,37 @@ function deleteImageFile($path) {
 // AJAX: Adicionar, editar, remover banner
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_banner'])) {
     header('Content-Type: application/json');
-    $acao = $_POST['acao'] ?? '';
+    $acao = PHP_SEGURO($_POST['acao'] ?? '');
     $id = intval($_POST['id'] ?? 0);
     // Remover banner
     if ($acao === 'remover' && $id) {
-        $res = $mysqli->query("SELECT img FROM banner WHERE id=$id");
+        $stmt = $mysqli->prepare("SELECT img FROM banner WHERE id=?");
+        $stmt->bind_param('i', $id);
+        $stmt->execute();
+        $res = $stmt->get_result();
         $img = ($res && $row = $res->fetch_assoc()) ? $row['img'] : '';
+        $stmt->close();
         if ($img && !preg_match('/^https?:\/\//', $img)) deleteImageFile($img);
-        $mysqli->query("DELETE FROM banner WHERE id=$id");
+        $stmt = $mysqli->prepare("DELETE FROM banner WHERE id=?");
+        $stmt->bind_param('i', $id);
+        $stmt->execute();
+        $stmt->close();
         echo json_encode(['success' => true, 'message' => 'Banner removido com sucesso!']);
         exit;
     }
     // Editar banner
     if ($acao === 'editar' && $id) {
-        $titulo = trim($_POST['titulo'] ?? '');
-        $link = trim($_POST['link'] ?? '');
+        $titulo = PHP_SEGURO($_POST['titulo'] ?? '');
+        $link = PHP_SEGURO($_POST['link'] ?? '');
+        if ($link && !filter_var($link, FILTER_VALIDATE_URL)) {
+            echo json_encode(['success' => false, 'message' => 'Link inválido!']);
+            exit;
+        }
         $status = intval($_POST['status'] ?? 1);
-        $mysqli->query("UPDATE banner SET titulo='$titulo', link='$link', status=$status WHERE id=$id");
+        $stmt = $mysqli->prepare("UPDATE banner SET titulo=?, link=?, status=? WHERE id=?");
+        $stmt->bind_param('ssii', $titulo, $link, $status, $id);
+        $stmt->execute();
+        $stmt->close();
         echo json_encode(['success' => true, 'message' => 'Banner atualizado!']);
         exit;
     }
@@ -48,7 +64,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_banner'])) {
             echo json_encode(['success' => false, 'message' => 'Erro no upload!']);
             exit;
         }
-        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        $filename = PHP_SEGURO($file['name']);
+        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
         if (!in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'svg', 'ico', 'gif'])) {
             echo json_encode(['success' => false, 'message' => 'Formato não permitido!']);
             exit;
@@ -63,10 +80,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_banner'])) {
             exit;
         }
         // Remove imagem antiga se for arquivo local
-        $res = $mysqli->query("SELECT img FROM banner WHERE id=$id");
+        $stmt = $mysqli->prepare("SELECT img FROM banner WHERE id=?");
+        $stmt->bind_param('i', $id);
+        $stmt->execute();
+        $res = $stmt->get_result();
         $img = ($res && $row = $res->fetch_assoc()) ? $row['img'] : '';
+        $stmt->close();
         if ($img && !preg_match('/^https?:\/\//', $img)) deleteImageFile($img);
-        $mysqli->query("UPDATE banner SET img='$dest' WHERE id=$id");
+        $stmt = $mysqli->prepare("UPDATE banner SET img=? WHERE id=?");
+        $stmt->bind_param('si', $dest, $id);
+        $stmt->execute();
+        $stmt->close();
         echo json_encode(['success' => true, 'message' => 'Imagem atualizada!', 'url' => $dest]);
         exit;
     }
@@ -78,23 +102,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_banner'])) {
             exit;
         }
         // Remove imagem antiga se for arquivo local
-        $res = $mysqli->query("SELECT img FROM banner WHERE id=$id");
+        $stmt = $mysqli->prepare("SELECT img FROM banner WHERE id=?");
+        $stmt->bind_param('i', $id);
+        $stmt->execute();
+        $res = $stmt->get_result();
         $img = ($res && $row = $res->fetch_assoc()) ? $row['img'] : '';
+        $stmt->close();
         if ($img && !preg_match('/^https?:\/\//', $img)) deleteImageFile($img);
-        $mysqli->query("UPDATE banner SET img='$linkimg' WHERE id=$id");
+        $stmt = $mysqli->prepare("UPDATE banner SET img=? WHERE id=?");
+        $stmt->bind_param('si', $linkimg, $id);
+        $stmt->execute();
+        $stmt->close();
         echo json_encode(['success' => true, 'message' => 'Imagem atualizada!', 'url' => $linkimg]);
         exit;
     }
     // Adicionar novo banner
     if ($acao === 'adicionar') {
-        $titulo = trim($_POST['titulo'] ?? '');
-        $link = trim($_POST['link'] ?? '');
+        $titulo = PHP_SEGURO($_POST['titulo'] ?? '');
+        $link = PHP_SEGURO($_POST['link'] ?? '');
+        if ($link && !filter_var($link, FILTER_VALIDATE_URL)) {
+            echo json_encode(['success' => false, 'message' => 'Link inválido!']);
+            exit;
+        }
         $status = intval($_POST['status'] ?? 1);
         $img = '';
         if (isset($_FILES['imagem'])) {
             $file = $_FILES['imagem'];
             if ($file['error'] === 0) {
-                $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+                $filename = PHP_SEGURO($file['name']);
+                $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
                 if (in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'svg', 'ico', 'gif'])) {
                     $nome = uniqid('banner_') . '.' . $ext;
                     $dest = 'tmp/imagens/' . $nome;
@@ -106,14 +142,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_banner'])) {
                     }
                 }
             }
-        } else if (isset($_POST['imagem_link']) && filter_var($_POST['imagem_link'], FILTER_VALIDATE_URL)) {
+        } elseif (isset($_POST['imagem_link']) && filter_var($_POST['imagem_link'], FILTER_VALIDATE_URL)) {
             $img = trim($_POST['imagem_link']);
         }
         if (!$img) {
             echo json_encode(['success' => false, 'message' => 'Imagem obrigatória!']);
             exit;
         }
-        $mysqli->query("INSERT INTO banner (titulo, img, link, status) VALUES ('$titulo', '$img', '$link', $status)");
+        $stmt = $mysqli->prepare("INSERT INTO banner (titulo, img, link, status) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param('sssi', $titulo, $img, $link, $status);
+        $stmt->execute();
+        $stmt->close();
         echo json_encode(['success' => true, 'message' => 'Banner adicionado!']);
         exit;
     }

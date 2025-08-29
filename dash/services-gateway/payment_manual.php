@@ -1,3 +1,4 @@
+// ⚠️ ATENÇÃO:Precisamos validar isso aqui ⚠️
 <?php
 ini_set('display_errors', 0);
 error_reporting(E_ALL);
@@ -47,23 +48,32 @@ if ($valor <= 0 || $chavepix1 === '' || $tipoChavePix === '') {
 }
 $valor = number_format($valor, 2, '.', '');
 
-// 2) Buscar credenciais do OndaPay
-$cred = $mysqli->query("SELECT url, client_id, client_secret FROM ondapay WHERE id = 1 AND ativo = 1 LIMIT 1");
-if (!$cred || !$cred->num_rows) {
+// 2) Buscar credenciais do Ezzebank
+$cred_stmt = $mysqli->prepare("SELECT url, client_id, client_secret FROM ezzebank WHERE id = 1 AND ativo = 1 LIMIT 1");
+if (!$cred_stmt) {
     http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Credenciais do OndaPay não configuradas.']);
+    echo json_encode(['success' => false, 'message' => 'Erro ao preparar a query de credenciais do Ezzebank.']);
     exit;
 }
-$data_ondapay = $cred->fetch_assoc();
-$base = rtrim($data_ondapay['url'] ?? 'https://api.ondapay.app', '/');
+$cred_stmt->execute();
+$cred = $cred_stmt->get_result();
+if (!$cred || !$cred->num_rows) {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => 'Credenciais do Ezzebank não configuradas.']);
+    $cred_stmt->close();
+    exit;
+}
+$data_ezzebank = $cred->fetch_assoc();
+$cred_stmt->close();
+$base = rtrim($data_ezzebank['url'] ?? 'https://api.ezzebank.app', '/');
 
 $ch = curl_init($base . '/api/v1/login');
 curl_setopt_array($ch, [
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_POST           => true,
     CURLOPT_HTTPHEADER     => [
-        'client_id: ' . $data_ondapay['client_id'],
-        'client_secret: ' . $data_ondapay['client_secret'],
+        'client_id: ' . $data_ezzebank['client_id'],
+        'client_secret: ' . $data_ezzebank['client_secret'],
         'Accept: application/json'
     ],
     CURLOPT_CONNECTTIMEOUT => 10,
@@ -75,7 +85,7 @@ if ($loginResp === false) {
     $err = curl_error($ch);
     curl_close($ch);
     http_response_code(502);
-    echo json_encode(['success' => false, 'message' => 'Erro cURL no login OndaPay: ' . $err]);
+    echo json_encode(['success' => false, 'message' => 'Erro cURL no login Ezzebank: ' . $err]);
     exit;
 }
 $loginHttp = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -84,7 +94,7 @@ curl_close($ch);
 $loginJson = json_decode($loginResp, true);
 if ($loginHttp < 200 || $loginHttp >= 300 || !isset($loginJson['token'])) {
     http_response_code(502);
-    echo json_encode(['success' => false, 'message' => 'Falha ao obter token OndaPay', 'raw' => $loginResp]);
+    echo json_encode(['success' => false, 'message' => 'Falha ao obter token Ezzebank', 'raw' => $loginResp]);
     exit;
 }
 $bearerToken = $loginJson['token'];
@@ -124,7 +134,7 @@ if ($payResp === false) {
     $err = curl_error($ch);
     curl_close($ch);
     http_response_code(502);
-    echo json_encode(['success' => false, 'message' => 'Erro na comunicação com OndaPay: ' . $err]);
+    echo json_encode(['success' => false, 'message' => 'Erro na comunicação com Ezzebank: ' . $err]);
     exit;
 }
 $payHttp = curl_getinfo($ch, CURLINFO_HTTP_CODE);

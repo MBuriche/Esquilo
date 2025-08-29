@@ -1,3 +1,4 @@
+// ⚠️ ATENÇÃO:Precisamos validar isso aqui ⚠️
 <?php
 ini_set('display_errors', 0);
 error_reporting(E_ALL);
@@ -89,6 +90,23 @@ function identificarTipoChavePix($chavepix) {
         return 'invalid';
     }
 }
+// ⚠️ ATENÇÃO:Precisamos validar isso aqui ⚠️
+// Mapeia o tipo de chave local para o padrão exigido pela Ezzebank
+function mapKeyTypeEzzebank($tipo, $chavepix) {
+    switch ($tipo) {
+        case 'document':
+            $digits = preg_replace('/\D/', '', $chavepix);
+            return strlen($digits) === 14 ? 'CNPJ' : 'CPF';
+        case 'phoneNumber':
+            return 'PHONE';
+        case 'email':
+            return 'EMAIL';
+        case 'randomKey':
+            return 'EVP';
+        default:
+            return null;
+    }
+}
 
 // --- Validação de valor e chave ---
 $valor = floatval($valor);
@@ -101,11 +119,10 @@ $data = $res->fetch_assoc();
 if ($valor > $data['saque_automatico']) sendError("Valor acima do limite automático.");
 
 // --- SuitPay ---
-$sql = "SELECT client_id, client_secret FROM suitpay WHERE id = 1 AND ativo = 1";
-$resultSuitPay = $mysqli->query($sql);
 
-$sql = "SELECT client_id, client_secret FROM bspay WHERE id = 1 AND ativo = 1";
-$resultBsPay = $mysqli->query($sql);
+
+$sql = "SELECT client_id, client_secret FROM ezzebank WHERE id = 1 AND ativo = 1";
+$resultEzzebank = $mysqli->query($sql);
 
 // $sql = "SELECT client_id, client_secret FROM midasbank WHERE id = 1 AND ativo = 1";
 // $resultMidasBank = $mysqli->query($sql);
@@ -152,16 +169,16 @@ if ($resultSuitPay->num_rows > 0) {
     } else {
         sendError("Erro ao processar o pagamento: $enviarpagamento");
     }
-} elseif ($resultBsPay->num_rows > 0) {
-    global $data_bspay;
-    $row = $resultBsPay->fetch_assoc();
+} elseif ($resultEzzebank->num_rows > 0) {
+    global $data_ezzebank;
+    $row = $resultEzzebank->fetch_assoc();
     $ci = $row['client_id'];
     $cs = $row['client_secret'];
     $bearer = base64_encode($ci.':'.$cs);
 
     $curl = curl_init();
     curl_setopt_array($curl, array(
-        CURLOPT_URL => $data_bspay['url'] . '/v2/oauth/token',
+        CURLOPT_URL => $data_ezzebank['url'] . '/oauth/token',
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_POST => true,
         CURLOPT_HTTPHEADER => array(
@@ -175,34 +192,29 @@ if ($resultSuitPay->num_rows > 0) {
     curl_close($curl);
 
     $chavepix = localizarchavepix2($chavepix1);
-    $nome_real = localizarusuarioporpix($chavepix1);
     $info_user = saldo_user_pix($chavepix1);
     $saldo = $info_user['saldo'] ?? 0;
     $user_id = $info_user['user_id'] ?? 0;
 
-    $tipoChavePix = identificarTipoChavePix($chavepix['chave']);
-    if ($tipoChavePix == 'invalid') sendError("Chave Pix inválida.");
+    $tipoChaveInterno = identificarTipoChavePix($chavepix['chave']);
+    $tipoChavePix = mapKeyTypeEzzebank($tipoChaveInterno, $chavepix['chave']);
+    if (!$tipoChavePix) sendError("Chave Pix inválida.");
 
-    //if ($saldo < $valor) sendError("Saldo insuficiente.");
+    if ($saldo < $valor) sendError("Saldo insuficiente.");
 
-    $transacao_id = 'SP' . rand(0, 999) . '-' . date('YMDHms');
+    $transacao_id = 'EZ' . rand(0, 999) . '-' . date('YMDHms');
     $payload = json_encode([
-        'creditParty' => [
-            'name' => $chavepix['realname'],
-            'keyType' => $tipoChavePix,
-            'key' => $chavepix['chave'],
-            'taxId' => $chavepix['cpf']
-        ],
+        'key' => $chavepix['chave'],
+        'keyType' => $tipoChavePix,
         'amount' => number_format($valor, 2, '.', ''),
-        'external_id' => $transacao_id,
-        'description' => 'Pagamento'
+        'externalId' => $transacao_id
     ]);
 
     //sleep(5);
 
     $curl = curl_init();
     curl_setopt_array($curl, [
-        CURLOPT_URL => $data_bspay['url'] . '/v2/pix/payment',
+        CURLOPT_URL => $data_ezzebank['url'] . '/pix/payments',
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_POST => true,
         CURLOPT_POSTFIELDS => $payload,
@@ -213,16 +225,17 @@ if ($resultSuitPay->num_rows > 0) {
         ],
     ]);
     $enviarpagamento = curl_exec($curl);
+    $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
     curl_close($curl);
-    
-    //sendError($enviarpagamento . "PAYLOAD ENVIADO: " . $payload);
 
-    if (strpos($enviarpagamento, 'Saque PIX processado com sucesso') !== false) {
-       // att_saldo_user($saldo - $valor, $user_id);
-     WebhookSaquesPagos($usuario, $url_base, $valor, $transacao_id, $chavepix['realname']);
+       $jsonResponse = json_decode($enviarpagamento, true);
+    if ($httpCode >= 200 && $httpCode < 300 && isset($jsonResponse['status']) && $jsonResponse['status'] === 'SUCCESS') {
+        att_saldo_user($saldo - $valor, $user_id);
+        WebhookSaquesPagos($usuario, $url_base, $valor, $transacao_id, $chavepix['realname']);
         die("Pagamento realizado com sucesso");
     } else {
-        sendError("Erro ao processar o pagamento: $enviarpagamento");
+        $erro = $jsonResponse['message'] ?? $enviarpagamento;
+        sendError("Erro ao processar o pagamento: $erro");
     }
 // } elseif ($resultMidasBank->num_rows > 0) {
 //     global $data_midasbank;

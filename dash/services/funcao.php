@@ -1,3 +1,4 @@
+// ⚠️ ATENÇÃO:Precisamos validar isso aqui ⚠️
 <?php
 date_default_timezone_set('America/Sao_Paulo');
 include_once __DIR__ . '/../../config.php';
@@ -224,7 +225,18 @@ function alertas_toaster($tipo, $titulo, $timer = null)
     return $alerta_x;
 }
 
-// Função de criptografia AES-256-CBC
+/**
+ * Perform AES-256-CBC encryption or decryption.
+ *
+ * The secret key and IV must be provided via the environment variables
+ * ENCRYPTION_SECRET_KEY and ENCRYPTION_SECRET_IV. These values should be
+ * securely managed by the hosting environment and never committed to the
+ * codebase.
+ *
+ * @param string $action  Either 'encrypt' or 'decrypt'.
+ * @param string $string  Data to encrypt or decrypt.
+ * @return string|false   Processed data or false on failure.
+ */
 function CRIPT_AES($action, $string)
 {
     $output = false;
@@ -232,27 +244,32 @@ function CRIPT_AES($action, $string)
     $secret_key = getenv('ENCRYPTION_SECRET_KEY');
     $secret_iv = getenv('ENCRYPTION_SECRET_IV');
 
+    if (empty($secret_key) || empty($secret_iv)) {
+        throw new RuntimeException('Encryption keys are not configured in environment variables.');
+    }
+
     $key = hash('sha256', $secret_key);
     $iv = substr(hash('sha256', $secret_iv), 0, 16);
 
-    if ($action == 'encrypt') {
+    if ($action === 'encrypt') {
         $output = openssl_encrypt($string, $encrypt_method, $key, 0, $iv);
         $output = base64_encode($output);
-    } else if ($action == 'decrypt') {
+    } elseif ($action === 'decrypt') {
         $output = openssl_decrypt(base64_decode($string), $encrypt_method, $key, 0, $iv);
     }
+
     return $output;
 }
 
-// Funções de criptografia base64
+// Funções de codificação base64 padrão
 function encodeAll($string)
 {
-    return base64_encode(base64_encode(base64_encode(base64_encode($string))));
+    return base64_encode($string);
 }
 
 function decodeAll($string)
 {
-    return base64_decode(base64_decode(base64_decode(base64_decode($string))));
+    return base64_decode($string);
 }
 
 // Função para gerar URLs amigáveis

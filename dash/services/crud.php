@@ -1,3 +1,4 @@
+// ⚠️ ATENÇÃO:Precisamos validar isso aqui ⚠️
 <?php
 ini_set('display_errors', 0);
 error_reporting(E_ALL);
@@ -178,16 +179,31 @@ function afiliado_de_quem($refer)
 
 	return $dinheiro;
 }
+
+// ⚠️ ATENÇÃO:Precisamos validar isso aqui ⚠️
 #=====================================================#
 # DATA CONFIG SUITPAY
 function data_ondapay()
 {
-	global $mysqli;
-	$qry = "SELECT * FROM ondapay WHERE id=1";
-	$res = mysqli_query($mysqli, $qry);
-	$data = mysqli_fetch_assoc($res);
-	return $data;
+        global $mysqli;
+        $qry = "SELECT * FROM ondapay WHERE id=1";
+        $res = mysqli_query($mysqli, $qry);
+        $data = mysqli_fetch_assoc($res);
+        return $data;
 }
+$data_ondapay = data_ondapay();
+
+# DATA CONFIG EZZEBANK
+function data_ezzebank()
+{
+        global $mysqli;
+        $qry = "SELECT * FROM ezzebank WHERE id=1";
+        $res = mysqli_query($mysqli, $qry);
+        $data = mysqli_fetch_assoc($res);
+        return $data;
+}
+$data_ezzebank = data_ezzebank();
+
 $data_ondapay = data_ondapay();
 
 # DATA CONFIG

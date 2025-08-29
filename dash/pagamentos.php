@@ -1,3 +1,4 @@
+// ⚠️ ATENÇÃO:Precisamos validar isso aqui ⚠️
 <?php
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_gateway_config'])) {
     header('Content-Type: application/json');
@@ -6,8 +7,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_gateway_config']
     $admin_id = $_SESSION['data_adm']['id'] ?? null;
     $mysqli->begin_transaction();
     try {
-        // Salvar apenas gateways individuais
-        $gateways = ['ondapay'];
+        // Salvar apenas gateways individuais␊
+        $gateways = ['ezzebank'];
         $ativos = [];
         foreach ($gateways as $gw) {
             $ativo = isset($_POST[$gw.'_ativo']) ? 1 : 0;
@@ -28,10 +29,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_gateway_config']
             $url = $_POST[$gw.'_url'] ?? '';
             $client_id = $_POST[$gw.'_client_id'] ?? '';
             $client_secret = $_POST[$gw.'_client_secret'] ?? '';
+            $api_token = $_POST[$gw.'_api_token'] ?? '';
             $ativo = $ativos[$gw];
             $atualizado = date('Y-m-d H:i:s');
-            $sql = $mysqli->prepare("UPDATE $gw SET url=?, client_id=?, client_secret=?, atualizado=?, ativo=? WHERE id=1");
-            $sql->bind_param("ssssi", $url, $client_id, $client_secret, $atualizado, $ativo);
+            $sql = $mysqli->prepare("UPDATE $gw SET url=?, client_id=?, client_secret=?, api_token=?, atualizado=?, ativo=? WHERE id=1");
+            $sql->bind_param("sssssi", $url, $client_id, $client_secret, $api_token, $atualizado, $ativo);
             $sql->execute();
         }
         $mysqli->commit();
@@ -57,29 +59,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_gateway_config']
         ]);
         exit;
     }
-}
-?>
-<!DOCTYPE html>
-<html x-data="main" class="" :class="[$store.app.mode]">
-
-<?php include "partes/head.php"; ?>
-
-<body x-data="main"
-    class="antialiased relative font-inter bg-white dark:bg-black text-black dark:text-white text-sm font-normal overflow-x-hidden vertical"
-    :class="[ $store.app.sidebar ? 'toggle-sidebar' : '', $store.app.rightsidebar ? 'right-sidebar' : '', $store.app.menu, $store.app.layout]">
-    <!-- Start Menu Sidebar Olverlay -->
-    <div x-cloak class="fixed inset-0 bg-[black]/60 z-40 lg:hidden" :class="{'hidden' : !$store.app.sidebar}"
-        @click="$store.app.toggleSidebar()"></div>
-    <!-- End Menu Sidebar Olverlay -->
-
-    <!-- Start Right Sidebar Olverlay -->
-    <div x-cloak class="fixed inset-0 bg-[black]/60 z-50 2xl:hidden" :class="{'hidden' : !$store.app.rightsidebar}"
+            <div x-cloak class="fixed inset-0 bg-[black]/60 z-50 2xl:hidden" :class="{'hidden' : !$store.app.rightsidebar}"
         @click="$store.app.rightSidebar()"></div>
-    <!-- End Right Sidebar Olverlay -->
-
-    <!-- Start Main Content -->
+    <-- End Right Sidebar Olverlay -->
+     <!-- Start Main Content -->
     <div class="main-container navbar-sticky flex" :class="[$store.app.navbar]">
-        <!-- Start Sidebar -->
+    <!-- Start Sidebar -->
         <nav
             class="sidebar fixed top-0 bottom-0 z-40 flex-none w-[212px] border-r border-black/10 dark:border-white/10 transition-all duration-300">
             <div class="bg-white dark:bg-black h-full">
@@ -98,9 +83,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_gateway_config']
             <!-- Start Content -->
             <div class="h-[calc(100vh-73px)] overflow-y-auto overflow-x-hidden">
                 <?php
-                $gateways = ['ondapay'];
+                $gateways = ['ezzebank'];
                 $labels = [
-                    'ondapay' => 'OndaPay',
+                    'ezzebank' => 'EzzeBank',
                 ];
                 $configs = [];
                 foreach ($gateways as $gw) {
@@ -108,6 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_gateway_config']
                         'url' => '',
                         'client_id' => '',
                         'client_secret' => '',
+                        'api_token' => '',
                         'atualizado' => '',
                         'ativo' => 0
                     ];
@@ -138,23 +124,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_gateway_config']
                                     </div>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="text-xs font-semibold">URL</label>
-                                    <input name="<?php echo $gw; ?>_url" class="form-input w-full border border-black/10 dark:border-white/10 bg-transparent px-3 py-2.5 rounded-lg" placeholder="URL do gateway" type="text" value="<?php echo htmlspecialchars($configs[$gw]['url']); ?>" />
-                                </div>
-                                <div class="mb-3">
-                                    <label class="text-xs font-semibold">Client ID</label>
-                                    <input name="<?php echo $gw; ?>_client_id" class="form-input w-full border border-black/10 dark:border-white/10 bg-transparent px-3 py-2.5 rounded-lg" placeholder="Client ID" type="text" value="<?php echo htmlspecialchars($configs[$gw]['client_id']); ?>" />
-                                </div>
-                                <div class="mb-3">
                                     <label class="text-xs font-semibold">Client Secret</label>
                                     <input name="<?php echo $gw; ?>_client_secret" class="form-input w-full border border-black/10 dark:border-white/10 bg-transparent px-3 py-2.5 rounded-lg" placeholder="Client Secret" type="text" value="<?php echo htmlspecialchars($configs[$gw]['client_secret']); ?>" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="text-xs font-semibold">API Token</label>
+                                    <input name="<?php echo $gw; ?>_api_token" class="form-input w-full border border-black/10 dark:border-white/10 bg-transparent px-3 py-2.5 rounded-lg" placeholder="API Token" type="text" value="<?php echo htmlspecialchars($configs[$gw]['api_token']); ?>" />
                                 </div>
                                 <div class="mb-1">
                                     <label class="text-xs font-semibold">Última Atualização</label>
                                     <input class="form-input w-full border border-black/10 dark:border-white/10 bg-transparent px-3 py-2.5 rounded-lg text-xs" type="text" value="<?php echo htmlspecialchars($configs[$gw]['atualizado']); ?>" readonly />
                                 </div>
                             </div>
-                        <?php endforeach; ?>
+                        <?php endforeach;
                         </div>
                         <div class="flex justify-center mt-8">
                             <button type="submit"
@@ -199,17 +181,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_gateway_config']
             const checkboxes = form.querySelectorAll('input[type=checkbox][name$="_ativo"]');
             let checkedCount = 0;
             checkboxes.forEach(cb => { if (cb.checked) checkedCount++; });
-            
-            if (checkedCount === 0) {
-                showToast('É necessário ativar pelo menos um gateway.', 'error');
-                return;
-            }
-            
+    
             if (checkedCount > 1) {
                 showToast('Só é permitido ativar um gateway por vez.', 'error');
                 return;
-            }
-            
+            } 
             const fd = new FormData(form);
             fd.append('ajax_gateway_config', 1);
             fetch('pagamentos', { method: 'POST', body: fd })
@@ -234,5 +210,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_gateway_config']
     </script>
 
 </body>
-
-</html>
