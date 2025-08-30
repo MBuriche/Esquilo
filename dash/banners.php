@@ -1,4 +1,3 @@
-// ⚠️ ATENÇÃO:Precisamos validar isso aqui ⚠️
 <?php
 include_once "services/database.php";
 include_once "services/funcao.php";

@@ -1,4 +1,3 @@
-// ⚠️ ATENÇÃO:Precisamos validar isso aqui ⚠️
 <?php
 ini_set('display_errors', 0);
 error_reporting(E_ALL);
@@ -180,7 +179,6 @@ function afiliado_de_quem($refer)
 	return $dinheiro;
 }
 
-// ⚠️ ATENÇÃO:Precisamos validar isso aqui ⚠️
 #=====================================================#
 # DATA CONFIG SUITPAY
 function data_ondapay()

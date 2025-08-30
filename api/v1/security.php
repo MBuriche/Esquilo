@@ -1,4 +1,3 @@
-// ⚠️ ATENÇÃO:Precisamos validar isso aqui ⚠️
 <?php
 require_once __DIR__ . '/cache_config.php';
 /**

@@ -1,4 +1,3 @@
-// ⚠️ ATENÇÃO:Precisamos validar isso aqui ⚠️
 <?php
 if (getenv('APP_ENV') !== 'production') {
     ini_set('display_errors', 1);

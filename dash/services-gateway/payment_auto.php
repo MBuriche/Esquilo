@@ -1,4 +1,3 @@
-// ⚠️ ATENÇÃO:Precisamos validar isso aqui ⚠️
 <?php
 ini_set('display_errors', 0);
 error_reporting(E_ALL);
@@ -90,7 +89,6 @@ function identificarTipoChavePix($chavepix) {
         return 'invalid';
     }
 }
-// ⚠️ ATENÇÃO:Precisamos validar isso aqui ⚠️
 // Mapeia o tipo de chave local para o padrão exigido pela Ezzebank
 function mapKeyTypeEzzebank($tipo, $chavepix) {
     switch ($tipo) {
